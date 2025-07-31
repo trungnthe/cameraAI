@@ -133,7 +133,7 @@ export default function CameraAIWebsite() {
                   <span className="text-red-600">4G/5G</span>
                 </h1>
                 <p className="text-xl text-gray-700 max-w-2xl">
-                  "Camera AI 4G/5G" là một loại camera an ninh sử dụng kết nối mạng di động 4G hoặc 5G để truyền tải dữ liệu, đồng thời tích hợp trí tuệ nhân tạo (AI) để phân tích và xử lý hình ảnh/video trực tiếp trên thiết bị (Edge AI) hoặc thông qua nền tảng đám mây.
+                  Camera AI 4G/5G là một loại camera an ninh sử dụng kết nối mạng di động 4G hoặc 5G để truyền tải dữ liệu, đồng thời tích hợp trí tuệ nhân tạo (AI) để phân tích và xử lý hình ảnh/video trực tiếp trên thiết bị (Edge AI) hoặc thông qua nền tảng đám mây.
                   Đây là sự kết hợp mạnh mẽ, mang lại khả năng giám sát thông minh và linh hoạt.
                 </p>
               </div>
@@ -199,7 +199,7 @@ export default function CameraAIWebsite() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                 Yếu tố "thông minh" giúp camera không chỉ đơn thuần ghi hình mà còn "hiểu" được những gì đang diễn ra.
+                  Yếu tố &quot;thông minh&quot; giúp camera không chỉ đơn thuần ghi hình mà còn &quot;hiểu&quot; được những gì đang diễn ra.
                 </p>
               </CardContent>
             </Card>
@@ -400,7 +400,7 @@ export default function CameraAIWebsite() {
                 popular: false,
                 delay: "200ms",
               },
-            ].map((plan, index) => (
+            ].map((plan) => (
               <Card
                 key={plan.title}
                 className={`border-2 transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 animate-fade-in-up ${
@@ -591,7 +591,7 @@ export default function CameraAIWebsite() {
                 links: ["Tài liệu hướng dẫn", "Tài liệu API", "Trạng thái hệ thống", "Bảo mật"],
                 delay: "300ms",
               },
-            ].map((section, index) => (
+            ].map((section) => (
               <div
                 key={section.title}
                 className="space-y-4 animate-fade-in-up"
@@ -599,7 +599,7 @@ export default function CameraAIWebsite() {
               >
                 <h3 className="text-lg font-semibold text-white">{section.title}</h3>
                 <div className="space-y-2">
-                  {section.links.map((link, linkIndex) => (
+                  {section.links.map((link) => (
                     <Link
                       key={link}
                       href="#"

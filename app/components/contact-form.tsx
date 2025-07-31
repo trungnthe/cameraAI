@@ -54,7 +54,7 @@ export default function ContactForm() {
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-gray-900">Message Sent!</h3>
-            <p className="text-gray-600">Thank you for contacting us. We'll get back to you within 24 hours.</p>
+            <p className="text-gray-600">Thank you for contacting us. We will get back to you within 24 hours.</p>
           </div>
         </CardContent>
       </Card>
