@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -29,6 +29,8 @@ import BlogSection from "./components/blog-section"
 import Marquee from "react-fast-marquee"
 
 export default function CameraAIWebsite() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   useEffect(() => {
     // Smooth scrolling for anchor links
     const handleSmoothScroll = (e: Event) => {
@@ -63,6 +65,8 @@ export default function CameraAIWebsite() {
       behavior: "smooth",
     })
   }
+
+
 
   return (
     <div className="min-h-screen bg-white scroll-smooth">
@@ -107,9 +111,37 @@ export default function CameraAIWebsite() {
             <Button className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
               MCK Group
             </Button>
-            <Button variant="ghost" size="icon" className="md:hidden hover:scale-110 transition-transform duration-300">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden hover:scale-110 transition-transform duration-300"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
               <Menu className="h-5 w-5" />
             </Button>
+            {isMenuOpen && (
+            <div className="absolute top-16 left-0 w-full bg-white shadow-md z-40 md:hidden animate-fade-in-down">
+              <nav className="flex flex-col items-start space-y-4 px-6 py-4">
+                {[
+                  { href: "#features", label: "Chức năng" },
+                  { href: "#demo", label: "Demo" },
+                  { href: "#sponsors", label: "Đối tác" },
+                  { href: "#services", label: "Gói dịch vụ" },
+                  { href: "#blog", label: "Bài viết" },
+                  { href: "#contact", label: "Liên hệ" },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="text-sm font-medium text-gray-700 hover:text-red-600 transition"
+                    onClick={() => setIsMenuOpen(false)} 
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          )}
           </div>
         </div>
       </header>
