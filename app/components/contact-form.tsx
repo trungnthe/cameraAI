@@ -26,18 +26,28 @@ export default function ContactForm() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
 
-    setIsSubmitting(false)
-    setSubmitted(true)
+      if (!res.ok) throw new Error("Gửi email thất bại")
 
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setSubmitted(false)
+      setSubmitted(true)
       setFormData({ name: "", email: "", company: "", service: "", message: "" })
-    }, 3000)
+
+      setTimeout(() => {
+        setSubmitted(false)
+      }, 3000)
+    } catch (err) {
+      alert("Lỗi khi gửi email. Vui lòng thử lại.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
+
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))

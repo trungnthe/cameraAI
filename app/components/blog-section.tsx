@@ -23,36 +23,48 @@ interface Post {
   }
 }
 
-
 export default function BlogSection() {
   const [posts, setPosts] = useState<Post[]>([])
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
+  const [currentPage, setCurrentPage] = useState(0)
+  const postsPerPage = 3
 
   useEffect(() => {
     client.fetch(postsQuery).then((data) => {
-      console.log('Fetched posts:', data)
       setPosts(data)
     })
   }, [])
-
 
   const uniqueCategories = Array.from(
     new Set(posts.flatMap((post) => post.categories))
   )
 
   const filteredPosts =
-  categoryFilter === 'all'
-    ? posts
-    : posts.filter((post) => post.categories.includes(categoryFilter))
+    categoryFilter === 'all'
+      ? posts
+      : posts.filter((post) => post.categories.includes(categoryFilter))
 
+  const pageCount = Math.ceil(filteredPosts.length / postsPerPage)
+  const paginatedPosts = filteredPosts.slice(
+    currentPage * postsPerPage,
+    currentPage * postsPerPage + postsPerPage
+  )
+
+  useEffect(() => {
+    // Reset về trang đầu khi đổi filter
+    setCurrentPage(0)
+  }, [categoryFilter])
 
   return (
     <section className="py-20 md:py-32 bg-white" id="blog">
       <div className="container mx-auto px-4 md:px-6 max-w-7xl">
         <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Bài viết của chúng tôi </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            </p>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+            Bài viết của chúng tôi
+          </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Những chia sẻ và kiến thức từ đội ngũ CameraAI - MCK Group
+          </p>
         </div>
 
         <div className="flex flex-wrap justify-center gap-3 mb-10">
@@ -82,8 +94,11 @@ export default function BlogSection() {
         </div>
 
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3">
-          {filteredPosts.map((post) => (
-            <div key={post._id} className="border rounded overflow-hidden shadow">
+          {paginatedPosts.map((post) => (
+            <div
+              key={post._id}
+              className="border rounded overflow-hidden shadow hover:shadow-lg transition-shadow duration-300"
+            >
               {post.mainImage?.asset?.url && (
                 <div className="relative w-full h-48">
                   <Image
@@ -93,24 +108,24 @@ export default function BlogSection() {
                     className="object-cover"
                   />
                 </div>
-
               )}
               <div className="p-4">
                 <Link href={`/blog/${post.slug}`}>
                   <h3 className="text-lg font-semibold hover:underline">{post.title}</h3>
                 </Link>
                 <p className="text-sm text-gray-500 mt-1">
-                  {post.author} • {new Date(post.publishedAt).toLocaleDateString()} 
-
+                  {post.author} • {new Date(post.publishedAt).toLocaleDateString()}
                 </p>
                 <div className="flex flex-wrap gap-1 mt-2">
                   {post.categories.map((cat, i) => (
-                    <span key={i} className="text-xs text-white bg-blue-500 px-2 py-1 rounded">
+                    <span
+                      key={i}
+                      className="text-xs text-white bg-blue-500 px-2 py-1 rounded"
+                    >
                       {cat}
                     </span>
                   ))}
                 </div>
-
                 <div className="mt-3 line-clamp-3 text-sm text-gray-700">
                   <PortableText value={post.body} />
                 </div>
@@ -118,6 +133,28 @@ export default function BlogSection() {
             </div>
           ))}
         </div>
+
+        {pageCount > 1 && (
+          <div className="flex justify-center mt-10 gap-4">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+              disabled={currentPage === 0}
+              className="px-4 py-2 rounded border bg-white hover:bg-gray-100 disabled:opacity-50"
+            >
+              ◀ Trang trước
+            </button>
+            <span className="self-center font-medium">
+              Trang {currentPage + 1} / {pageCount}
+            </span>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, pageCount - 1))}
+              disabled={currentPage >= pageCount - 1}
+              className="px-4 py-2 rounded border bg-white hover:bg-gray-100 disabled:opacity-50"
+            >
+              Trang sau ▶
+            </button>
+          </div>
+        )}
       </div>
     </section>
   )
