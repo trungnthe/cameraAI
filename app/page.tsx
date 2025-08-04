@@ -27,6 +27,7 @@ import Link from "next/link"
 import ContactForm from "./components/contact-form"
 import BlogSection from "./components/blog-section"
 import Marquee from "react-fast-marquee"
+import Image from "next/image"
 
 export default function CameraAIWebsite() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -201,9 +202,11 @@ export default function CameraAIWebsite() {
             </div>
 
             <div className="relative">
-              <img
+              <Image
                 src="/images/map.png"
                 alt="CameraAI Dashboard"
+                width={1920} // hoặc đúng tỉ lệ mong muốn
+                height={550}
                 className="w-full h-[450px] md:h-[550px] object-cover rounded-lg shadow-2xl"
               />
             </div>

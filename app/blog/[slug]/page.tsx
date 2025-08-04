@@ -2,6 +2,7 @@ import { client } from '@/lib/sanity'
 import { PortableText } from '@portabletext/react'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
+import { PortableTextBlock } from '@portabletext/types'
 
 interface Post {
   _id: string
@@ -10,7 +11,7 @@ interface Post {
   author: string
   categories: string[]
   publishedAt: string
-  body: any
+  body: PortableTextBlock[]
   mainImage?: {
     asset: {
       url: string
@@ -38,8 +39,9 @@ async function getPost(slug: string): Promise<Post | null> {
   return await client.fetch(query, { slug })
 }
 
-export default async function BlogDetailPage({ params }: { params: { slug: string } }) {
-  const post = await getPost(params.slug)
+export default async function BlogDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const post = await getPost(slug)
 
   if (!post) return notFound()
 

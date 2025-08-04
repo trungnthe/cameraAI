@@ -5,22 +5,23 @@ import { client } from '../../lib/sanity'
 import { postsQuery } from '@/lib/queries'
 import { PortableText } from '@portabletext/react'
 import Link from 'next/link'
+import { PortableTextBlock } from '@portabletext/types'
+import Image from 'next/image'
 
 interface Post {
   _id: string
   title: string
-  slug:  { current: string }
+  slug: { current: string }
   author: string
-  categories: string[] 
+  categories: string[]
   publishedAt: string
-  body: any
+  body: PortableTextBlock[]
   mainImage?: {
     asset: {
       url: string
     }
   }
 }
-
 
 
 export default function BlogSection() {
@@ -84,11 +85,15 @@ export default function BlogSection() {
           {filteredPosts.map((post) => (
             <div key={post._id} className="border rounded overflow-hidden shadow">
               {post.mainImage?.asset?.url && (
-                <img
-                  src={post.mainImage.asset.url}
-                  alt={post.title}
-                  className="w-full h-48 object-cover"
-                />
+                <div className="relative w-full h-48">
+                  <Image
+                    src={post.mainImage.asset.url}
+                    alt={post.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+
               )}
               <div className="p-4">
                 <Link href={`/blog/${post.slug}`}>
