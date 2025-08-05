@@ -1,20 +1,25 @@
-"use client"
+'use client'
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    company: "",
+    phone: "", // Thêm số điện thoại
     service: "",
     message: "",
   })
@@ -36,7 +41,7 @@ export default function ContactForm() {
       if (!res.ok) throw new Error("Gửi email thất bại")
 
       setSubmitted(true)
-      setFormData({ name: "", email: "", company: "", service: "", message: "" })
+      setFormData({ name: "", email: "", phone: "", service: "", message: "" })
 
       setTimeout(() => {
         setSubmitted(false)
@@ -47,7 +52,6 @@ export default function ContactForm() {
       setIsSubmitting(false)
     }
   }
-
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -96,8 +100,14 @@ export default function ContactForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="company">Công ty</Label>
-            <Input id="company" value={formData.company} onChange={(e) => handleChange("company", e.target.value)} />
+            <Label htmlFor="phone">Số điện thoại *</Label>
+            <Input
+              id="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => handleChange("phone", e.target.value)}
+              required
+            />
           </div>
 
           <div className="space-y-2">
@@ -108,10 +118,10 @@ export default function ContactForm() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="basic">Gói AI Cơ Bản</SelectItem>
-                    <SelectItem value="professional">Gói AI Chuyên Nghiệp</SelectItem>
-                    <SelectItem value="enterprise">Gói AI Doanh Nghiệp</SelectItem>
-                    <SelectItem value="custom">Giải Pháp Tùy Chỉnh</SelectItem>
-                    <SelectItem value="demo">Yêu Cầu Dùng Thử</SelectItem>
+                <SelectItem value="professional">Gói AI Chuyên Nghiệp</SelectItem>
+                <SelectItem value="enterprise">Gói AI Doanh Nghiệp</SelectItem>
+                <SelectItem value="custom">Giải Pháp Tùy Chỉnh</SelectItem>
+                <SelectItem value="demo">Yêu Cầu Dùng Thử</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -128,7 +138,7 @@ export default function ContactForm() {
           </div>
 
           <Button type="submit" className="w-full bg-red-600 hover:bg-red-700" disabled={isSubmitting}>
-            {isSubmitting ? "Sending..." : "Send Message"}
+            {isSubmitting ? "Đang gửi..." : "Gửi tin nhắn"}
           </Button>
         </form>
       </CardContent>

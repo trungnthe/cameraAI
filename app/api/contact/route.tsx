@@ -1,22 +1,21 @@
-// app/api/contact/route.ts
 import { NextRequest, NextResponse } from "next/server"
 import nodemailer from "nodemailer"
 
 export async function POST(req: NextRequest) {
-  const { name, email, company, service, message } = await req.json()
+  const { name, email, phone, service, message } = await req.json()
 
   const transporter = nodemailer.createTransport({
-    service: "gmail", // hoặc dùng SMTP server riêng
+    service: "gmail",
     auth: {
-      user: process.env.EMAIL_USER, // ví dụ: example@gmail.com
-      pass: process.env.EMAIL_PASS, // App Password (nếu dùng Gmail)
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
   })
 
   const mailOptions = {
     from: `"${name}" <${email}>`,
     to: process.env.EMAIL_USER,
-    subject: `New Contact Form - ${service || "No service selected"}`,
+    subject: `Khách hàng mới - ${service || "No service selected"}`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px;">
         <h2 style="color: #c62828;">📩 Thông tin liên hệ mới từ website CameraAI</h2>
@@ -33,8 +32,8 @@ export async function POST(req: NextRequest) {
             <td style="padding: 8px; border: 1px solid #ddd;">${email}</td>
           </tr>
           <tr>
-            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Công ty</strong></td>
-            <td style="padding: 8px; border: 1px solid #ddd;">${company || "Không cung cấp"}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Số điện thoại</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${phone}</td>
           </tr>
           <tr>
             <td style="padding: 8px; border: 1px solid #ddd;"><strong>Dịch vụ quan tâm</strong></td>
@@ -53,7 +52,6 @@ export async function POST(req: NextRequest) {
         </p>
       </div>
     `,
-
   }
 
   try {
@@ -81,4 +79,3 @@ function getServiceLabel(value: string) {
       return "Không xác định"
   }
 }
-

@@ -7,6 +7,7 @@ import { PortableText } from '@portabletext/react'
 import Link from 'next/link'
 import { PortableTextBlock } from '@portabletext/types'
 import Image from 'next/image'
+import { motion } from 'framer-motion'
 
 interface Post {
   _id: string
@@ -51,7 +52,6 @@ export default function BlogSection() {
   )
 
   useEffect(() => {
-    // Reset về trang đầu khi đổi filter
     setCurrentPage(0)
   }, [categoryFilter])
 
@@ -68,7 +68,9 @@ export default function BlogSection() {
         </div>
 
         <div className="flex flex-wrap justify-center gap-3 mb-10">
-          <button
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.05 }}
             onClick={() => setCategoryFilter('all')}
             className={`px-4 py-2 text-sm rounded border ${
               categoryFilter === 'all'
@@ -77,10 +79,12 @@ export default function BlogSection() {
             }`}
           >
             Tất cả
-          </button>
+          </motion.button>
           {uniqueCategories.map((cat) => (
-            <button
+            <motion.button
               key={cat}
+              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.05 }}
               onClick={() => setCategoryFilter(cat)}
               className={`px-4 py-2 text-sm rounded border ${
                 categoryFilter === cat
@@ -89,26 +93,30 @@ export default function BlogSection() {
               }`}
             >
               {cat}
-            </button>
+            </motion.button>
           ))}
         </div>
 
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3">
-          {paginatedPosts.map((post) => (
-            <div
+          {paginatedPosts.map((post, index) => (
+            <motion.div
               key={post._id}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
               className="border rounded overflow-hidden shadow hover:shadow-lg transition-shadow duration-300"
             >
               {post.mainImage?.asset?.url && (
-                <div className="relative w-full h-48">
+                <div className="relative w-full h-48 overflow-hidden group">
                   <Image
                     src={post.mainImage.asset.url}
                     alt={post.title}
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-110"
                   />
                 </div>
               )}
+
               <div className="p-4">
                 <Link href={`/blog/${post.slug}`}>
                   <h3 className="text-lg font-semibold hover:underline">{post.title}</h3>
@@ -130,12 +138,17 @@ export default function BlogSection() {
                   <PortableText value={post.body} />
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {pageCount > 1 && (
-          <div className="flex justify-center mt-10 gap-4">
+          <motion.div
+            className="flex justify-center mt-10 gap-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
               disabled={currentPage === 0}
@@ -153,7 +166,7 @@ export default function BlogSection() {
             >
               Trang sau ▶
             </button>
-          </div>
+          </motion.div>
         )}
       </div>
     </section>
