@@ -28,7 +28,7 @@ export default function HeaderSection() {
             { href: "/#services", label: "Gói dịch vụ" },
             { href: "/#blog", label: "Bài viết" },
             { href: "/#contact", label: "Liên hệ" },
-          ].map((item, index) => (
+          ].map((item) => (
             <Link
               key={item.href}
               href={item.href}
