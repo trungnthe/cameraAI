@@ -43,6 +43,8 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
   const { slug } = await params
   const post = await getPost(slug)
 
+  console.log('Post data:', post)
+
   if (!post) return notFound()
 
   return (
