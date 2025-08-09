@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Edit, Trash2, Eye, X } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, X, RotateCcw } from "lucide-react";
 import AdminLayout from "../components/admin-layout";
 import RichTextEditor from "@/components/ui/rich-text-editor";
 
@@ -22,6 +22,7 @@ export default function BlogPostsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -129,6 +130,18 @@ export default function BlogPostsPage() {
     }
   };
 
+  const handleResetForm = () => {
+    setFormData({
+      title: '',
+      content: '',
+      author: '',
+      tags: '',
+      published: true
+    });
+    setIsPreviewMode(false);
+    setIsResetConfirmOpen(false);
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -231,21 +244,32 @@ export default function BlogPostsPage() {
                   <Label htmlFor="published">Publish immediately</Label>
                 </div>
                 
-                <div className="flex justify-end space-x-2 sticky bottom-0 bg-white border-t mt-6 pt-4">
+                <div className="flex justify-between sticky bottom-0 bg-white border-t mt-6 pt-4">
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setIsCreateDialogOpen(false)}
+                    onClick={() => setIsResetConfirmOpen(true)}
+                    className="text-orange-600 hover:bg-orange-50"
                   >
-                    Cancel
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Reset
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={isCreating}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    {isCreating ? 'Creating...' : 'Create Post'}
-                  </Button>
+                  <div className="flex space-x-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsCreateDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={isCreating}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      {isCreating ? 'Creating...' : 'Create Post'}
+                    </Button>
+                  </div>
                 </div>
                 </form>
               ) : (
@@ -281,33 +305,73 @@ export default function BlogPostsPage() {
                     />
                   </div>
                   
-                  <div className="flex justify-end space-x-2 sticky bottom-0 bg-white border-t pt-4">
+                  <div className="flex justify-between sticky bottom-0 bg-white border-t pt-4">
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => setIsCreateDialogOpen(false)}
+                      onClick={() => setIsResetConfirmOpen(true)}
+                      className="text-orange-600 hover:bg-orange-50"
                     >
-                      Cancel
+                      <RotateCcw className="h-4 w-4 mr-2" />
+                      Reset
                     </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsPreviewMode(false)}
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Back to Edit
-                    </Button>
-                    <Button
-                      type="button"
-                      disabled={isCreating}
-                      className="bg-red-600 hover:bg-red-700"
-                      onClick={handleCreatePost}
-                    >
-                      {isCreating ? 'Creating...' : 'Create Post'}
-                    </Button>
+                    <div className="flex space-x-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsCreateDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsPreviewMode(false)}
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Back to Edit
+                      </Button>
+                      <Button
+                        type="button"
+                        disabled={isCreating}
+                        className="bg-red-600 hover:bg-red-700"
+                        onClick={handleCreatePost}
+                      >
+                        {isCreating ? 'Creating...' : 'Create Post'}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
+            </DialogContent>
+          </Dialog>
+          
+          {/* Reset Confirmation Dialog */}
+          <Dialog open={isResetConfirmOpen} onOpenChange={setIsResetConfirmOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Reset Form</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to reset the form? All content will be cleared and cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end space-x-2 mt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsResetConfirmOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={handleResetForm}
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Reset Form
+                </Button>
+              </div>
             </DialogContent>
           </Dialog>
         </div>
