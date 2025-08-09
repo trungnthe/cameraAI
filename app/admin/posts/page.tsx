@@ -7,9 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import AdminLayout from "../components/admin-layout";
+import RichTextEditor from "@/components/ui/rich-text-editor";
 
 export default function BlogPostsPage() {
   const [posts, setPosts] = useState<{
@@ -70,6 +70,19 @@ export default function BlogPostsPage() {
     setIsCreating(true);
 
     try {
+      // Validate required fields
+      if (!formData.title.trim()) {
+        alert('Please enter a title');
+        setIsCreating(false);
+        return;
+      }
+      
+      if (!formData.content.trim() || formData.content === '<p><br></p>') {
+        alert('Please enter content');
+        setIsCreating(false);
+        return;
+      }
+
       const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
       
       const postData = {
@@ -157,15 +170,11 @@ export default function BlogPostsPage() {
                 
                 <div>
                   <Label htmlFor="content">Content</Label>
-                  <Textarea
-                    id="content"
-                    name="content"
+                  <RichTextEditor
                     value={formData.content}
-                    onChange={handleInputChange}
+                    onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
                     placeholder="Enter blog post content"
-                    rows={8}
-                    className="resize-none"
-                    required
+                    height="300px"
                   />
                 </div>
                 
