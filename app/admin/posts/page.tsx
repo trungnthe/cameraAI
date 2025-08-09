@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, X } from "lucide-react";
 import AdminLayout from "../components/admin-layout";
 import RichTextEditor from "@/components/ui/rich-text-editor";
 
@@ -21,6 +21,7 @@ export default function BlogPostsPage() {
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -65,8 +66,10 @@ export default function BlogPostsPage() {
     }
   };
 
-  const handleCreatePost = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreatePost = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     setIsCreating(true);
 
     try {
@@ -104,7 +107,7 @@ export default function BlogPostsPage() {
       const data = await response.json();
       
       if (data.success) {
-        // Reset form
+        // Reset form and states
         setFormData({
           title: '',
           content: '',
@@ -112,6 +115,7 @@ export default function BlogPostsPage() {
           tags: '',
           published: true
         });
+        setIsPreviewMode(false);
         setIsCreateDialogOpen(false);
         // Refresh posts list
         fetchPosts();
@@ -137,14 +141,40 @@ export default function BlogPostsPage() {
                 New Post
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="blog-dialog-large max-h-[98vh] overflow-y-auto" style={{ width: '70vw', maxWidth: '70vw' }}>
               <DialogHeader>
-                <DialogTitle>Create New Blog Post</DialogTitle>
-                <DialogDescription>
-                  Fill in the details below to create a new blog post.
-                </DialogDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <DialogTitle>Create New Blog Post</DialogTitle>
+                    <DialogDescription>
+                      Fill in the details below to create a new blog post.
+                    </DialogDescription>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      type="button"
+                      variant={!isPreviewMode ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setIsPreviewMode(false)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={isPreviewMode ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setIsPreviewMode(true)}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      Preview
+                    </Button>
+                  </div>
+                </div>
               </DialogHeader>
-              <form onSubmit={handleCreatePost} className="space-y-4">
+
+              {!isPreviewMode ? (
+                /* Edit Mode - Form */
+                <form onSubmit={handleCreatePost} className="space-y-4">
                 <div>
                   <Label htmlFor="title">Title</Label>
                   <Input
@@ -217,7 +247,67 @@ export default function BlogPostsPage() {
                     {isCreating ? 'Creating...' : 'Create Post'}
                   </Button>
                 </div>
-              </form>
+                </form>
+              ) : (
+                /* Preview Mode */
+                <div className="space-y-6">
+                  <div className="bg-white p-6 rounded-lg border">
+                    <h1 className="text-3xl font-bold mb-2">{formData.title || 'Untitled Post'}</h1>
+                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                      <span>By {formData.author || 'Admin'}</span>
+                      <span>•</span>
+                      <span>{new Date().toLocaleDateString()}</span>
+                      <span>•</span>
+                      <Badge variant={formData.published ? "default" : "secondary"}>
+                        {formData.published ? "Published" : "Draft"}
+                      </Badge>
+                    </div>
+                    
+                    {formData.tags && (
+                      <div className="flex flex-wrap gap-2 mb-6">
+                        {formData.tags.split(',').map((tag, index) => (
+                          <Badge key={index} variant="outline">
+                            {tag.trim()}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    
+                    <div 
+                      className="prose max-w-none"
+                      dangerouslySetInnerHTML={{ 
+                        __html: formData.content || '<p class="text-gray-500">No content yet...</p>' 
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end space-x-2 sticky bottom-0 bg-white border-t pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsCreateDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsPreviewMode(false)}
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Back to Edit
+                    </Button>
+                    <Button
+                      type="button"
+                      disabled={isCreating}
+                      className="bg-red-600 hover:bg-red-700"
+                      onClick={handleCreatePost}
+                    >
+                      {isCreating ? 'Creating...' : 'Create Post'}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>
