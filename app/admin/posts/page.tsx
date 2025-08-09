@@ -11,12 +11,15 @@ import { Plus, Edit, Trash2, Eye, X, RotateCcw } from "lucide-react";
 import AdminLayout from "../components/admin-layout";
 import RichTextEditor from "@/components/ui/rich-text-editor";
 import { useNotifications } from "@/components/ui/use-notifications";
+import { ImageUpload } from "@/components/ui/image-upload";
+import Image from "next/image";
 
 export default function BlogPostsPage() {
   const { showSuccess, showError } = useNotifications();
   const [posts, setPosts] = useState<{
     id: string;
     title: string;
+    thumbnail?: string;
     createdAt: string;
     published: boolean;
   }[]>([]);
@@ -26,13 +29,14 @@ export default function BlogPostsPage() {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [postToDelete, setPostToDelete] = useState<{ id: string; title: string; createdAt: string; published: boolean } | null>(null);
+  const [postToDelete, setPostToDelete] = useState<{ id: string; title: string; thumbnail?: string; createdAt: string; published: boolean } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [editingPost, setEditingPost] = useState<{ id: string; title: string; createdAt: string; published: boolean } | null>(null);
+  const [editingPost, setEditingPost] = useState<{ id: string; title: string; thumbnail?: string; createdAt: string; published: boolean } | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
+    thumbnail: '',
     author: '',
     tags: '',
     published: true
@@ -66,6 +70,7 @@ export default function BlogPostsPage() {
         setFormData({
           title: post.title,
           content: post.content,
+          thumbnail: post.thumbnail || '',
           author: post.author,
           tags: post.tags.join(', '),
           published: post.published
@@ -122,6 +127,7 @@ export default function BlogPostsPage() {
       const postData = {
         title: formData.title,
         content: formData.content,
+        thumbnail: formData.thumbnail || null,
         author: formData.author || 'Admin',
         tags: tagsArray,
         published: formData.published
@@ -142,6 +148,7 @@ export default function BlogPostsPage() {
         setFormData({
           title: '',
           content: '',
+          thumbnail: '',
           author: '',
           tags: '',
           published: true
@@ -188,6 +195,7 @@ export default function BlogPostsPage() {
       const postData = {
         title: formData.title,
         content: formData.content,
+        thumbnail: formData.thumbnail || null,
         author: formData.author || 'Admin',
         tags: tagsArray,
         published: formData.published
@@ -208,6 +216,7 @@ export default function BlogPostsPage() {
         setFormData({
           title: '',
           content: '',
+          thumbnail: '',
           author: '',
           tags: '',
           published: true
@@ -232,6 +241,7 @@ export default function BlogPostsPage() {
     setFormData({
       title: '',
       content: '',
+      thumbnail: '',
       author: '',
       tags: '',
       published: true
@@ -245,6 +255,7 @@ export default function BlogPostsPage() {
     setFormData({
       title: '',
       content: '',
+      thumbnail: '',
       author: '',
       tags: '',
       published: true
@@ -261,6 +272,7 @@ export default function BlogPostsPage() {
     setFormData({
       title: '',
       content: '',
+      thumbnail: '',
       author: '',
       tags: '',
       published: true
@@ -295,7 +307,7 @@ export default function BlogPostsPage() {
     }
   };
 
-  const handleOpenDeleteConfirm = (post: { id: string; title: string; createdAt: string; published: boolean }) => {
+  const handleOpenDeleteConfirm = (post: { id: string; title: string; thumbnail?: string; createdAt: string; published: boolean }) => {
     setPostToDelete(post);
     setIsDeleteConfirmOpen(true);
   };
@@ -370,6 +382,15 @@ export default function BlogPostsPage() {
                 </div>
                 
                 <div>
+                  <Label htmlFor="thumbnail">Thumbnail Image</Label>
+                  <ImageUpload
+                    value={formData.thumbnail}
+                    onChange={(value) => setFormData(prev => ({ ...prev, thumbnail: value }))}
+                    placeholder="Enter thumbnail image URL or upload file"
+                  />
+                </div>
+                
+                <div>
                   <Label htmlFor="content">Content</Label>
                   <RichTextEditor
                     value={formData.content}
@@ -438,6 +459,23 @@ export default function BlogPostsPage() {
                 <div className="space-y-6">
                   <div className="bg-white p-6 rounded-lg border">
                     <h1 className="text-3xl font-bold mb-2">{formData.title || 'Untitled Post'}</h1>
+                    
+                    {formData.thumbnail && (
+                      <div className="mb-4">
+                        <Image 
+                          src={formData.thumbnail} 
+                          alt="Thumbnail preview" 
+                          width={400}
+                          height={192}
+                          className="w-full max-w-md h-48 object-cover rounded-lg border"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+                    
                     <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
                       <span>By {formData.author || 'Admin'}</span>
                       <span>•</span>
@@ -589,11 +627,26 @@ export default function BlogPostsPage() {
                 ) : (
                   posts.map((post) => (
                     <div key={post.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h3 className="font-medium">{post.title}</h3>
-                        <p className="text-sm text-gray-500">
-                          Created: {new Date(post.createdAt).toLocaleDateString()}
-                        </p>
+                      <div className="flex items-center space-x-4">
+                        {post.thumbnail && (
+                          <Image 
+                            src={post.thumbnail} 
+                            alt={post.title}
+                            width={60}
+                            height={60}
+                            className="w-15 h-15 object-cover rounded-lg border"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                            }}
+                          />
+                        )}
+                        <div>
+                          <h3 className="font-medium">{post.title}</h3>
+                          <p className="text-sm text-gray-500">
+                            Created: {new Date(post.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Badge variant={post.published ? "default" : "secondary"}>
