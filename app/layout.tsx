@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import ConditionalHeader from './components/conditional-header'
+import { NotificationProvider } from '@/components/ui/notification'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -18,8 +19,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ConditionalHeader/>
-        {children}
+        <NotificationProvider>
+          <ConditionalHeader/>
+          {children}
+        </NotificationProvider>
       </body>
     </html>
   )

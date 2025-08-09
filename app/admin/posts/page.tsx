@@ -10,8 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Plus, Edit, Trash2, Eye, X, RotateCcw } from "lucide-react";
 import AdminLayout from "../components/admin-layout";
 import RichTextEditor from "@/components/ui/rich-text-editor";
+import { useNotifications } from "@/components/ui/use-notifications";
 
 export default function BlogPostsPage() {
+  const { showSuccess, showError } = useNotifications();
   const [posts, setPosts] = useState<{
     id: string;
     title: string;
@@ -23,6 +25,11 @@ export default function BlogPostsPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<{ id: string; title: string; createdAt: string; published: boolean } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [editingPost, setEditingPost] = useState<{ id: string; title: string; createdAt: string; published: boolean } | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -47,6 +54,29 @@ export default function BlogPostsPage() {
       console.error('Error fetching posts:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPost = async (id: string) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blogs/${id}`);
+      const data = await response.json();
+      if (data.success) {
+        const post = data.data;
+        setFormData({
+          title: post.title,
+          content: post.content,
+          author: post.author,
+          tags: post.tags.join(', '),
+          published: post.published
+        });
+        setEditingPost(posts.find(p => p.id === id) || null);
+        setIsCreateDialogOpen(true);
+      } else {
+        showError('Error Loading Post', 'Failed to load post details');
+      }
+    } catch {
+      showError('Error', 'Failed to load post details. Please try again.');
     }
   };
 
@@ -76,13 +106,13 @@ export default function BlogPostsPage() {
     try {
       // Validate required fields
       if (!formData.title.trim()) {
-        alert('Please enter a title');
+        showError('Validation Error', 'Please enter a title');
         setIsCreating(false);
         return;
       }
       
       if (!formData.content.trim() || formData.content === '<p><br></p>') {
-        alert('Please enter content');
+        showError('Validation Error', 'Please enter content');
         setIsCreating(false);
         return;
       }
@@ -120,13 +150,81 @@ export default function BlogPostsPage() {
         setIsCreateDialogOpen(false);
         // Refresh posts list
         fetchPosts();
+        showSuccess('Success!', 'Blog post created successfully');
       } else {
-        console.error('Error creating post:', data.message);
+        showError('Error Creating Post', data.message || 'Failed to create blog post');
       }
-    } catch (error) {
-      console.error('Error creating post:', error);
+    } catch {
+      showError('Error', 'Failed to create blog post. Please try again.');
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleUpdatePost = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    if (!editingPost) return;
+    
+    setIsUpdating(true);
+
+    try {
+      // Validate required fields
+      if (!formData.title.trim()) {
+        showError('Validation Error', 'Please enter a title');
+        setIsUpdating(false);
+        return;
+      }
+      
+      if (!formData.content.trim() || formData.content === '<p><br></p>') {
+        showError('Validation Error', 'Please enter content');
+        setIsUpdating(false);
+        return;
+      }
+
+      const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+      
+      const postData = {
+        title: formData.title,
+        content: formData.content,
+        author: formData.author || 'Admin',
+        tags: tagsArray,
+        published: formData.published
+      };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blogs/${editingPost.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Reset form and states
+        setFormData({
+          title: '',
+          content: '',
+          author: '',
+          tags: '',
+          published: true
+        });
+        setEditingPost(null);
+        setIsPreviewMode(false);
+        setIsCreateDialogOpen(false);
+        // Refresh posts list
+        fetchPosts();
+        showSuccess('Success!', 'Blog post updated successfully');
+      } else {
+        showError('Error Updating Post', data.message || 'Failed to update blog post');
+      }
+    } catch {
+      showError('Error', 'Failed to update blog post. Please try again.');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -138,8 +236,68 @@ export default function BlogPostsPage() {
       tags: '',
       published: true
     });
+    setEditingPost(null);
     setIsPreviewMode(false);
     setIsResetConfirmOpen(false);
+  };
+
+  const handleOpenCreateDialog = () => {
+    setFormData({
+      title: '',
+      content: '',
+      author: '',
+      tags: '',
+      published: true
+    });
+    setEditingPost(null);
+    setIsPreviewMode(false);
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsCreateDialogOpen(false);
+    setEditingPost(null);
+    setIsPreviewMode(false);
+    setFormData({
+      title: '',
+      content: '',
+      author: '',
+      tags: '',
+      published: true
+    });
+  };
+
+  const handleDeletePost = async () => {
+    if (!postToDelete) return;
+    
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blogs/${postToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Close confirmation dialog and refresh posts list
+        setIsDeleteConfirmOpen(false);
+        setPostToDelete(null);
+        fetchPosts();
+        showSuccess('Success!', 'Blog post deleted successfully');
+      } else {
+        showError('Error Deleting Post', data.message || 'Failed to delete blog post');
+      }
+    } catch {
+      showError('Error', 'Failed to delete blog post. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleOpenDeleteConfirm = (post: { id: string; title: string; createdAt: string; published: boolean }) => {
+    setPostToDelete(post);
+    setIsDeleteConfirmOpen(true);
   };
 
   return (
@@ -149,7 +307,7 @@ export default function BlogPostsPage() {
           <h2 className="text-2xl font-bold text-gray-900">Blog Posts</h2>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-red-600 hover:bg-red-700">
+              <Button className="bg-red-600 hover:bg-red-700" onClick={handleOpenCreateDialog}>
                 <Plus className="h-4 w-4 mr-2" />
                 New Post
               </Button>
@@ -158,9 +316,9 @@ export default function BlogPostsPage() {
               <DialogHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <DialogTitle>Create New Blog Post</DialogTitle>
+                    <DialogTitle>{editingPost ? 'Edit Blog Post' : 'Create New Blog Post'}</DialogTitle>
                     <DialogDescription>
-                      Fill in the details below to create a new blog post.
+                      {editingPost ? 'Update the details below to modify the blog post.' : 'Fill in the details below to create a new blog post.'}
                     </DialogDescription>
                   </div>
                   <div className="flex space-x-2">
@@ -187,7 +345,7 @@ export default function BlogPostsPage() {
 
               {!isPreviewMode ? (
                 /* Edit Mode - Form */
-                <form onSubmit={handleCreatePost} className="space-y-4">
+                <form onSubmit={editingPost ? handleUpdatePost : handleCreatePost} className="space-y-4">
                 <div>
                   <Label htmlFor="title">Title</Label>
                   <Input
@@ -258,16 +416,19 @@ export default function BlogPostsPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => setIsCreateDialogOpen(false)}
+                      onClick={handleCloseDialog}
                     >
                       Cancel
                     </Button>
                     <Button
                       type="submit"
-                      disabled={isCreating}
+                      disabled={editingPost ? isUpdating : isCreating}
                       className="bg-red-600 hover:bg-red-700"
                     >
-                      {isCreating ? 'Creating...' : 'Create Post'}
+                      {editingPost 
+                        ? (isUpdating ? 'Updating...' : 'Update Post')
+                        : (isCreating ? 'Creating...' : 'Create Post')
+                      }
                     </Button>
                   </div>
                 </div>
@@ -319,7 +480,7 @@ export default function BlogPostsPage() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => setIsCreateDialogOpen(false)}
+                        onClick={handleCloseDialog}
                       >
                         Cancel
                       </Button>
@@ -333,11 +494,14 @@ export default function BlogPostsPage() {
                       </Button>
                       <Button
                         type="button"
-                        disabled={isCreating}
+                        disabled={editingPost ? isUpdating : isCreating}
                         className="bg-red-600 hover:bg-red-700"
-                        onClick={handleCreatePost}
+                        onClick={editingPost ? handleUpdatePost : handleCreatePost}
                       >
-                        {isCreating ? 'Creating...' : 'Create Post'}
+                        {editingPost 
+                          ? (isUpdating ? 'Updating...' : 'Update Post')
+                          : (isCreating ? 'Creating...' : 'Create Post')
+                        }
                       </Button>
                     </div>
                   </div>
@@ -374,6 +538,40 @@ export default function BlogPostsPage() {
               </div>
             </DialogContent>
           </Dialog>
+          
+          {/* Delete Confirmation Dialog */}
+          <Dialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Delete Blog Post</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete &quot;{postToDelete?.title}&quot;? This action cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end space-x-2 mt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsDeleteConfirmOpen(false);
+                    setPostToDelete(null);
+                  }}
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={handleDeletePost}
+                  disabled={isDeleting}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {isDeleting ? 'Deleting...' : 'Delete Post'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
         
         <Card>
@@ -401,10 +599,15 @@ export default function BlogPostsPage() {
                         <Badge variant={post.published ? "default" : "secondary"}>
                           {post.published ? "Published" : "Draft"}
                         </Badge>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => fetchPost(post.id)}>
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm" className="text-red-600 hover:bg-red-50">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-red-600 hover:bg-red-50"
+                          onClick={() => handleOpenDeleteConfirm(post)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
